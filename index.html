@@ -565,21 +565,21 @@
                 <div class="section-title">Bumper Colors</div>
                 <div class="color-row">
                     <label>Top</label>
-                    <input type="color" id="color1" value="#cc6600">
-                    <input type="range" id="opacity1" min="0" max="100" value="85" class="color-opacity">
-                    <span class="opacity-val" id="opacity1-val">85%</span>
+                    <input type="color" id="color1" value="#888888">
+                    <input type="range" id="opacity1" min="0" max="100" value="0" class="color-opacity">
+                    <span class="opacity-val" id="opacity1-val">0%</span>
                 </div>
                 <div class="color-row" id="color-middle-row" style="display:none;">
                     <label>Middle</label>
-                    <input type="color" id="color3" value="#ff8800">
-                    <input type="range" id="opacity3" min="0" max="100" value="85" class="color-opacity">
-                    <span class="opacity-val" id="opacity3-val">85%</span>
+                    <input type="color" id="color3" value="#888888">
+                    <input type="range" id="opacity3" min="0" max="100" value="0" class="color-opacity">
+                    <span class="opacity-val" id="opacity3-val">0%</span>
                 </div>
                 <div class="color-row">
                     <label>Bottom</label>
-                    <input type="color" id="color2" value="#8B4513">
-                    <input type="range" id="opacity2" min="0" max="100" value="85" class="color-opacity">
-                    <span class="opacity-val" id="opacity2-val">85%</span>
+                    <input type="color" id="color2" value="#888888">
+                    <input type="range" id="opacity2" min="0" max="100" value="0" class="color-opacity">
+                    <span class="opacity-val" id="opacity2-val">0%</span>
                 </div>
             </div>
 
@@ -627,12 +627,12 @@
         // ========== STATE ==========
         let state = {
             gradientMode: 2,
-            color1: '#cc6600',
-            color2: '#8B4513',
-            color3: '#ff8800',
-            opacity1: 85,
-            opacity2: 85,
-            opacity3: 85,
+            color1: '#888888',
+            color2: '#888888',
+            color3: '#888888',
+            opacity1: 0,
+            opacity2: 0,
+            opacity3: 0,
             blendMode: 'color',
             cardImage: null,
             cardOffsetX: 0,
@@ -1144,10 +1144,10 @@
         function resetAll() {
             state = {
                 gradientMode: 2,
-                color1: '#cc6600',
-                color2: '#8B4513',
-                color3: '#ff8800',
-                opacity1: 85, opacity2: 85, opacity3: 85,
+                color1: '#888888',
+                color2: '#888888',
+                color3: '#888888',
+                opacity1: 0, opacity2: 0, opacity3: 0,
                 blendMode: 'color',
                 cardImage: null,
                 cardOffsetX: 0,
@@ -1160,12 +1160,12 @@
 
             document.getElementById('color1').value = state.color1;
             document.getElementById('color2').value = state.color2;
-            document.getElementById('opacity1').value = 85;
-            document.getElementById('opacity1-val').textContent = '85%';
-            document.getElementById('opacity2').value = 85;
-            document.getElementById('opacity2-val').textContent = '85%';
-            document.getElementById('opacity3').value = 85;
-            document.getElementById('opacity3-val').textContent = '85%';
+            document.getElementById('opacity1').value = 0;
+            document.getElementById('opacity1-val').textContent = '0%';
+            document.getElementById('opacity2').value = 0;
+            document.getElementById('opacity2-val').textContent = '0%';
+            document.getElementById('opacity3').value = 0;
+            document.getElementById('opacity3-val').textContent = '0%';
             document.getElementById('blend-mode').value = state.blendMode;
             document.getElementById('card-x').value = 0;
             document.getElementById('card-x-val').textContent = '0';
