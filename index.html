@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GradedGuard Fitting Room</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .app {
+            display: flex;
+            flex-direction: row;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .preview-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            background: #ffffff;
+            position: relative;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        .preview-placeholder {
+            text-align: center;
+            color: #555;
+        }
+
+        .preview-placeholder svg { width: 64px; height: 64px; margin-bottom: 12px; opacity: 0.3; }
+        .preview-placeholder p { font-size: 14px; }
+
+        #preview-canvas {
+            max-height: calc(100vh - 70px);
+            max-width: 100%;
+            object-fit: contain;
+        }
+
+        .controls {
+            width: 360px;
+            min-width: 360px;
+            background: #16213e;
+            padding: 24px;
+            overflow-y: auto;
+            max-height: 100vh;
+            border-left: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .controls h1 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            background: linear-gradient(135deg, #e2e2ff, #a0a0ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .controls .subtitle {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 24px;
+        }
+
+        .section { margin-bottom: 20px; }
+
+        .section-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: #8888aa;
+            margin-bottom: 10px;
+        }
+
+        .upload-zone {
+            border: 2px dashed rgba(255,255,255,0.2);
+            border-radius: 10px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: rgba(255,255,255,0.02);
+        }
+
+        .upload-zone:hover {
+            border-color: rgba(100,100,255,0.5);
+            background: rgba(100,100,255,0.05);
+        }
+
+        .upload-zone.has-card {
+            border-color: rgba(100, 255, 100, 0.3);
+            background: rgba(100, 255, 100, 0.05);
+        }
+
+        .upload-zone svg { width: 32px; height: 32px; margin-bottom: 8px; opacity: 0.5; }
+        .upload-zone p { font-size: 13px; color: #888; }
+        .upload-zone .filename { font-size: 12px; color: #6a6; margin-top: 6px; word-break: break-all; }
+
+        #card-upload { display: none; }
+
+        .mode-toggle {
+            display: flex;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 8px 12px;
+            background: transparent;
+            border: none;
+            color: #888;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .mode-btn.active {
+            background: rgba(100,100,255,0.2);
+            color: #fff;
+        }
+
+        .color-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .color-row label { font-size: 12px; color: #aaa; width: 50px; flex-shrink: 0; }
+
+        .color-opacity { flex: 1; min-width: 60px; }
+
+        .opacity-val { font-size: 11px; color: #888; width: 32px; text-align: right; flex-shrink: 0; }
+
+        .color-row input[type="color"] {
+            width: 40px; height: 32px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 6px; cursor: pointer;
+            background: transparent; padding: 2px;
+        }
+
+        .color-row input[type="color"]::-webkit-color-swatch-wrapper { padding: 2px; }
+        .color-row input[type="color"]::-webkit-color-swatch { border: none; border-radius: 4px; }
+
+        .slider-row { margin-bottom: 14px; }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px; color: #aaa; margin-bottom: 4px;
+        }
+
+        .slider-label span:last-child { color: #fff; font-weight: 500; }
+
+        input[type="range"] {
+            width: 100%; height: 6px; border-radius: 3px;
+            -webkit-appearance: none; appearance: none;
+            background: rgba(255,255,255,0.1); outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 16px; height: 16px; border-radius: 50%;
+            background: #6c63ff; cursor: pointer; border: 2px solid #fff;
+        }
+
+        .blend-select {
+            width: 100%;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 13px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .blend-select option { background: #16213e; color: #e0e0e0; }
+
+        .presets-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+        }
+
+        .preset-btn {
+            aspect-ratio: 1;
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 8px; cursor: pointer;
+            transition: all 0.2s; position: relative;
+            overflow: hidden;
+        }
+
+        .preset-btn:hover { border-color: rgba(255,255,255,0.4); transform: scale(1.05); }
+        .preset-btn.active { border-color: #6c63ff; box-shadow: 0 0 10px rgba(108, 99, 255, 0.3); }
+
+        .preset-btn .preset-name {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            font-size: 8px; text-align: center; padding: 2px;
+            background: rgba(0,0,0,0.5); color: #fff;
+        }
+
+        .btn-primary {
+            width: 100%; padding: 12px; border: none; border-radius: 8px;
+            font-size: 14px; font-weight: 600; cursor: pointer;
+            transition: all 0.2s; font-family: inherit;
+            background: linear-gradient(135deg, #6c63ff, #4834d4); color: #fff;
+        }
+
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(108, 99, 255, 0.4); }
+
+        .btn-secondary {
+            width: 100%; padding: 10px;
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px; font-size: 13px; cursor: pointer;
+            transition: all 0.2s; font-family: inherit;
+            background: transparent; color: #aaa; margin-top: 8px;
+        }
+
+        .btn-secondary:hover { border-color: rgba(255,255,255,0.3); color: #fff; }
+
+        .base-options {
+            display: flex;
+            gap: 6px;
+        }
+
+        .base-btn {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 4px;
+            background: transparent;
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: #888;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .base-btn:hover { border-color: rgba(255,255,255,0.3); color: #ccc; }
+        .base-btn.active { border-color: #6c63ff; color: #fff; background: rgba(100,100,255,0.1); }
+
+        .base-preview {
+            width: 100%;
+            height: 28px;
+            border-radius: 4px;
+            display: block;
+        }
+
+        .flip-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #aaa;
+            cursor: pointer;
+        }
+
+        .flip-label input[type="checkbox"] {
+            accent-color: #6c63ff;
+        }
+
+        .divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 16px 0; }
+
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 24px;
+            background: #0d1117;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            flex-shrink: 0;
+        }
+
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo-placeholder {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #6c63ff;
+            flex-shrink: 0;
+        }
+
+        .top-bar-brand h2 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.2;
+        }
+
+        .top-bar-brand h2 span {
+            font-weight: 400;
+            color: #8888aa;
+        }
+
+        .top-bar-brand p {
+            font-size: 11px;
+            color: #555;
+        }
+
+        .top-bar-nav {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            padding: 7px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.15);
+            background: transparent;
+            color: #aaa;
+            font-size: 12px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover { border-color: rgba(255,255,255,0.3); color: #fff; }
+
+        .nav-btn.accent {
+            border-color: #6c63ff;
+            color: #6c63ff;
+        }
+
+        .nav-btn.accent:hover { background: rgba(108,99,255,0.15); }
+
+        @media (max-width: 800px) {
+            .app { flex-direction: column; }
+            .controls { width: 100%; min-width: unset; max-height: unset; border-left: none; border-top: 1px solid rgba(255,255,255,0.1); }
+            .preview-area { min-height: 50vh; }
+            .top-bar { flex-wrap: wrap; gap: 10px; }
+            .top-bar-nav { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="top-bar-left">
+            <div class="top-bar-brand">
+                <h2><span>Slab Guard</span> Fitting Room</h2>
+                <p>Design & Try On Different Possibilities</p>
+            </div>
+        </div>
+        <div class="top-bar-nav">
+            <button class="nav-btn accent" id="change-slab-btn">Change Slab Image</button>
+            <button class="nav-btn" id="save-preset-btn">Save Preset</button>
+        </div>
+    </div>
+    <div class="app">
+        <div class="preview-area">
+            <div class="preview-placeholder" id="placeholder">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <path d="m21 15-5-5L5 21"/>
+                </svg>
+                <p>Upload a graded card image to get started</p>
+            </div>
+            <canvas id="preview-canvas" style="display:none;"></canvas>
+        </div>
+
+        <div class="controls">
+            <h1>Fitting Room</h1>
+            <p class="subtitle">GradedGuard Bumper Designer</p>
+
+            <!-- Card Upload -->
+            <div class="section">
+                <div class="section-title">Your Graded Card</div>
+                <div class="upload-zone" id="upload-zone">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                    <p>Click or drag to upload your graded card</p>
+                </div>
+                <input type="file" id="card-upload" accept="image/*">
+            </div>
+
+            <hr class="divider">
+
+            <!-- Card Position -->
+            <div class="section">
+                <div class="section-title">Card Position</div>
+                <div class="slider-row">
+                    <div class="slider-label"><span>Horizontal</span><span id="card-x-val">0</span></div>
+                    <input type="range" id="card-x" min="-200" max="200" value="0">
+                </div>
+                <div class="slider-row">
+                    <div class="slider-label"><span>Vertical</span><span id="card-y-val">0</span></div>
+                    <input type="range" id="card-y" min="-200" max="200" value="0">
+                </div>
+                <div class="slider-row">
+                    <div class="slider-label"><span>Scale</span><span id="card-scale-val">95%</span></div>
+                    <input type="range" id="card-scale" min="50" max="150" value="95">
+                </div>
+            </div>
+
+            <hr class="divider">
+
+            <!-- Bumper Base -->
+            <div class="section">
+                <div class="section-title">Bumper Base</div>
+                <div class="base-options">
+                    <button class="base-btn active" data-base="light-to-dark">
+                        <span class="base-preview" style="background:linear-gradient(180deg,#ddd,#333)"></span>
+                        <span>Light to Dark</span>
+                    </button>
+                    <button class="base-btn" data-base="light">
+                        <span class="base-preview" style="background:#ddd"></span>
+                        <span>Light</span>
+                    </button>
+                    <button class="base-btn" data-base="dark">
+                        <span class="base-preview" style="background:#333"></span>
+                        <span>Dark</span>
+                    </button>
+                </div>
+                <label class="flip-label" id="flip-container">
+                    <input type="checkbox" id="flip-frame">
+                    <span>Flip vertically</span>
+                </label>
+            </div>
+
+            <hr class="divider">
+
+            <!-- Gradient Mode -->
+            <div class="section">
+                <div class="section-title">Gradient Mode</div>
+                <div class="mode-toggle">
+                    <button class="mode-btn active" data-mode="2">2 Colors</button>
+                    <button class="mode-btn" data-mode="3">3 Colors</button>
+                </div>
+            </div>
+
+            <!-- Color Pickers with Opacity -->
+            <div class="section">
+                <div class="section-title">Bumper Colors</div>
+                <div class="color-row">
+                    <label>Top</label>
+                    <input type="color" id="color1" value="#cc6600">
+                    <input type="range" id="opacity1" min="0" max="100" value="85" class="color-opacity">
+                    <span class="opacity-val" id="opacity1-val">85%</span>
+                </div>
+                <div class="color-row" id="color-middle-row" style="display:none;">
+                    <label>Middle</label>
+                    <input type="color" id="color3" value="#ff8800">
+                    <input type="range" id="opacity3" min="0" max="100" value="85" class="color-opacity">
+                    <span class="opacity-val" id="opacity3-val">85%</span>
+                </div>
+                <div class="color-row">
+                    <label>Bottom</label>
+                    <input type="color" id="color2" value="#8B4513">
+                    <input type="range" id="opacity2" min="0" max="100" value="85" class="color-opacity">
+                    <span class="opacity-val" id="opacity2-val">85%</span>
+                </div>
+            </div>
+
+            <!-- Blend Mode -->
+            <div class="section">
+                <div class="section-title">Blend Mode</div>
+                <select class="blend-select" id="blend-mode">
+                    <option value="color" selected>Color (natural)</option>
+                    <option value="overlay">Overlay</option>
+                    <option value="hard-light">Hard Light</option>
+                    <option value="soft-light">Soft Light</option>
+                    <option value="multiply">Multiply (darker)</option>
+                    <option value="screen">Screen (lighter)</option>
+                    <option value="hue">Hue</option>
+                </select>
+            </div>
+
+            <hr class="divider">
+
+            <!-- Presets -->
+            <div class="section">
+                <div class="section-title">Presets</div>
+                <div class="presets-grid" id="presets-grid"></div>
+            </div>
+
+            <hr class="divider">
+
+            <!-- Actions -->
+            <div class="section">
+                <button class="btn-primary" id="download-btn">Download Image</button>
+                <button class="btn-secondary" id="reset-btn">Reset All</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const FRAME_SOURCES = {
+            'light-to-dark': 'light-to-dark.png',
+            'light': 'light-base.png',
+            'dark': 'dark-base.png'
+        };
+
+        // ========== STATE ==========
+        let state = {
+            gradientMode: 2,
+            color1: '#cc6600',
+            color2: '#8B4513',
+            color3: '#ff8800',
+            opacity1: 85,
+            opacity2: 85,
+            opacity3: 85,
+            blendMode: 'color',
+            cardImage: null,
+            cardOffsetX: 0,
+            cardOffsetY: 0,
+            cardScale: 95,
+            frameBase: 'light-to-dark',
+            flipFrame: false
+        };
+
+        // ========== PRESETS ==========
+        const PRESETS = [
+            { name: 'None',       c1: '#888888', c2: '#888888', mode: 2, o1: 0,  o2: 0,  o3: 0,  blend: 'color' },
+            { name: 'Cola',       c1: '#cc6600', c2: '#8B4513', mode: 2, o1: 85, o2: 85, o3: 85, blend: 'color' },
+            { name: 'Ultraviolet',c1: '#7B2D8E', c2: '#4A0E5C', mode: 2, o1: 90, o2: 90, o3: 90, blend: 'color' },
+            { name: 'Red',        c1: '#DD2222', c2: '#CC1111', mode: 2, o1: 90, o2: 90, o3: 90, blend: 'color' },
+            { name: 'Confetti',   c1: '#C5A23E', c2: '#8B7D3C', mode: 2, o1: 75, o2: 75, o3: 75, blend: 'color' },
+            { name: 'Ocean',      c1: '#0077CC', c2: '#004488', mode: 2, o1: 85, o2: 85, o3: 85, blend: 'color' },
+            { name: 'Emerald',    c1: '#00AA55', c2: '#006633', mode: 2, o1: 85, o2: 85, o3: 85, blend: 'color' },
+            { name: 'Sunset',     c1: '#FF4400', c2: '#FFCC00', c3: '#FF8800', mode: 3, o1: 80, o2: 80, o3: 80, blend: 'color' },
+            { name: 'Galaxy',     c1: '#6600FF', c2: '#FF0066', c3: '#8833CC', mode: 3, o1: 85, o2: 85, o3: 85, blend: 'color' },
+            { name: 'Ice',        c1: '#88CCFF', c2: '#FFFFFF', mode: 2, o1: 70, o2: 70, o3: 70, blend: 'soft-light' },
+            { name: 'Gold',       c1: '#FFD700', c2: '#B8860B', mode: 2, o1: 85, o2: 85, o3: 85, blend: 'color' },
+            { name: 'Neon',       c1: '#FF00FF', c2: '#00FFFF', c3: '#FFFF00', mode: 3, o1: 80, o2: 80, o3: 80, blend: 'overlay' },
+        ];
+
+        // ========== DOM ==========
+        const canvas = document.getElementById('preview-canvas');
+        const ctx = canvas.getContext('2d');
+        const placeholder = document.getElementById('placeholder');
+        const uploadZone = document.getElementById('upload-zone');
+        const fileInput = document.getElementById('card-upload');
+
+        // Stores processed (transparent-interior) canvases for each base
+        let processedFrames = {};
+        let framesLoaded = 0;
+        const FRAME_COUNT = Object.keys(FRAME_SOURCES).length;
+
+        // ========== INIT ==========
+        function init() {
+            // Load all bumper frame PNGs
+            for (const [key, src] of Object.entries(FRAME_SOURCES)) {
+                const img = new Image();
+                img.onload = () => {
+                    processedFrames[key] = processFrameImage(img);
+                    framesLoaded++;
+                    if (framesLoaded >= FRAME_COUNT) render();
+                };
+                img.onerror = () => { framesLoaded++; console.error('Failed to load', src); };
+                img.src = src;
+            }
+
+            setupEventListeners();
+            buildPresets();
+        }
+
+        function processFrameImage(img) {
+            return img;
+        }
+
+        function getActiveFrame() {
+            return processedFrames[state.frameBase] || null;
+        }
+
+        // ========== GRADIENT HELPER ==========
+        function hexToRgba(hex, opacity) {
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return `rgba(${r},${g},${b},${opacity / 100})`;
+        }
+
+        function createGradient(targetCtx, x, y, w, h) {
+            // Always top to bottom, solid at ends, blending in the middle
+            const grad = targetCtx.createLinearGradient(x, y, x, y + h);
+            const c1 = hexToRgba(state.color1, state.opacity1);
+            const c2 = hexToRgba(state.color2, state.opacity2);
+
+            if (state.gradientMode === 3) {
+                const c3 = hexToRgba(state.color3, state.opacity3);
+                grad.addColorStop(0, c1);
+                grad.addColorStop(0.25, c1);
+                grad.addColorStop(0.5, c3);
+                grad.addColorStop(0.75, c2);
+                grad.addColorStop(1, c2);
+            } else {
+                const mid = hexToRgba(
+                    blendHex(state.color1, state.color2, 0.5),
+                    (state.opacity1 + state.opacity2) / 2
+                );
+                grad.addColorStop(0, c1);
+                grad.addColorStop(0.3, c1);
+                grad.addColorStop(0.5, mid);
+                grad.addColorStop(0.7, c2);
+                grad.addColorStop(1, c2);
+            }
+            return grad;
+        }
+
+        function blendHex(hex1, hex2, t) {
+            const r1 = parseInt(hex1.slice(1, 3), 16), g1 = parseInt(hex1.slice(3, 5), 16), b1 = parseInt(hex1.slice(5, 7), 16);
+            const r2 = parseInt(hex2.slice(1, 3), 16), g2 = parseInt(hex2.slice(3, 5), 16), b2 = parseInt(hex2.slice(5, 7), 16);
+            const r = Math.round(r1 + (r2 - r1) * t), g = Math.round(g1 + (g2 - g1) * t), b = Math.round(b1 + (b2 - b1) * t);
+            const toHex = v => v.toString(16).padStart(2, '0');
+            return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+        }
+
+        // ========== RENDERING ==========
+        const SHADOW_PAD = 40;
+
+        function render() {
+            if (!state.cardImage) return;
+
+            const W = canvas.width;
+            const H = canvas.height;
+            const P = SHADOW_PAD;
+            const fw = W - P * 2; // frame area width
+            const fh = H - P * 2; // frame area height
+
+            ctx.clearRect(0, 0, W, H);
+
+            // 1. White background inside the frame area
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(P, P, fw, fh);
+
+            // 2. Draw the user's graded card (aspect-fit inside frame area)
+            const img = state.cardImage;
+            const imgAR = img.width / img.height;
+            const frameAR = fw / fh;
+            let baseW, baseH;
+            if (imgAR > frameAR) {
+                baseW = fw;
+                baseH = fw / imgAR;
+            } else {
+                baseH = fh;
+                baseW = fh * imgAR;
+            }
+            const scale = state.cardScale / 100;
+            const cw = baseW * scale;
+            const ch = baseH * scale;
+            const cx = P + (fw - cw) / 2 + state.cardOffsetX;
+            const cy = P + (fh - ch) / 2 + state.cardOffsetY;
+            ctx.drawImage(img, cx, cy, cw, ch);
+
+            // 3. Overlay the colorized bumper frame
+            const frame = getActiveFrame();
+            if (frame) drawColorizedFrame(frame);
+        }
+
+        function drawColorizedFrame(frame) {
+            const W = canvas.width;
+            const H = canvas.height;
+            const P = SHADOW_PAD;
+            const fw = W - P * 2;
+            const fh = H - P * 2;
+            // Offscreen: colorize the frame (opacity baked into gradient)
+            const off = document.createElement('canvas');
+            off.width = frame.width;
+            off.height = frame.height;
+            const oc = off.getContext('2d');
+
+            oc.drawImage(frame, 0, 0);
+            oc.globalCompositeOperation = state.blendMode;
+            oc.fillStyle = createGradient(oc, 0, 0, off.width, off.height);
+            oc.fillRect(0, 0, off.width, off.height);
+            oc.globalCompositeOperation = 'destination-in';
+            oc.drawImage(frame, 0, 0);
+
+            // Draw onto main canvas with optional flip
+            ctx.save();
+            if (state.flipFrame) {
+                ctx.translate(0, H);
+                ctx.scale(1, -1);
+            }
+
+            // Shadow behind frame
+            ctx.save();
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
+            ctx.shadowBlur = 25;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 3;
+            ctx.drawImage(frame, P, P, fw, fh);
+            ctx.restore();
+
+            // Base frame texture
+            ctx.drawImage(frame, P, P, fw, fh);
+
+            // Colorized overlay
+            ctx.drawImage(off, P, P, fw, fh);
+            ctx.restore();
+        }
+
+        // ========== EVENT LISTENERS ==========
+        function setupEventListeners() {
+            uploadZone.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', (e) => { if (e.target.files.length) handleFile(e.target.files[0]); });
+            uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.style.borderColor = 'rgba(100,100,255,0.5)'; });
+            uploadZone.addEventListener('dragleave', () => { uploadZone.style.borderColor = ''; });
+            uploadZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadZone.style.borderColor = '';
+                if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+            });
+
+            // Base selection
+            document.querySelectorAll('.base-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.base-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    state.frameBase = btn.dataset.base;
+                    const frame = getActiveFrame();
+                    if (frame && state.cardImage) {
+                        const pad = 40;
+                        canvas.width = frame.width + pad * 2;
+                        canvas.height = frame.height + pad * 2;
+                    }
+                    render();
+                });
+            });
+
+            document.getElementById('flip-frame').addEventListener('change', (e) => {
+                state.flipFrame = e.target.checked;
+                render();
+            });
+
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    state.gradientMode = parseInt(btn.dataset.mode);
+                    document.getElementById('color-middle-row').style.display = state.gradientMode === 3 ? 'flex' : 'none';
+                    clearActivePreset();
+                    render();
+                });
+            });
+
+            ['color1', 'color2', 'color3'].forEach(id => {
+                document.getElementById(id).addEventListener('input', (e) => {
+                    state[id] = e.target.value;
+                    clearActivePreset();
+                    render();
+                });
+            });
+
+            bindSlider('opacity1', 'opacity1-val', (v) => { state.opacity1 = v; return v + '%'; });
+            bindSlider('opacity2', 'opacity2-val', (v) => { state.opacity2 = v; return v + '%'; });
+            bindSlider('opacity3', 'opacity3-val', (v) => { state.opacity3 = v; return v + '%'; });
+            bindSlider('card-x', 'card-x-val', (v) => { state.cardOffsetX = v; return v; });
+            bindSlider('card-y', 'card-y-val', (v) => { state.cardOffsetY = v; return v; });
+            bindSlider('card-scale', 'card-scale-val', (v) => { state.cardScale = v; return v + '%'; });
+
+            document.getElementById('blend-mode').addEventListener('change', (e) => {
+                state.blendMode = e.target.value;
+                clearActivePreset();
+                render();
+            });
+
+            document.getElementById('download-btn').addEventListener('click', downloadImage);
+            document.getElementById('reset-btn').addEventListener('click', resetAll);
+            document.getElementById('change-slab-btn').addEventListener('click', () => fileInput.click());
+            document.getElementById('save-preset-btn').addEventListener('click', downloadImage);
+        }
+
+        function bindSlider(inputId, labelId, update) {
+            document.getElementById(inputId).addEventListener('input', (e) => {
+                const val = parseInt(e.target.value);
+                document.getElementById(labelId).textContent = update(val);
+                render();
+            });
+        }
+
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    state.cardImage = img;
+                    // Canvas slightly larger than frame to give room for shadow
+                    const frame = getActiveFrame();
+                    const pad = 40; // shadow padding
+                    if (frame) {
+                        canvas.width = frame.width + pad * 2;
+                        canvas.height = frame.height + pad * 2;
+                    } else {
+                        canvas.width = img.width + pad * 2;
+                        canvas.height = img.height + pad * 2;
+                    }
+                    canvas.style.display = 'block';
+                    placeholder.style.display = 'none';
+
+                    uploadZone.classList.add('has-card');
+                    uploadZone.innerHTML = `
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                        <p>Card loaded!</p>
+                        <div class="filename">${file.name}</div>
+                        <p style="font-size:11px;color:#666;margin-top:6px;">Click to change</p>
+                    `;
+                    render();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // ========== PRESETS ==========
+        function buildPresets() {
+            const grid = document.getElementById('presets-grid');
+            PRESETS.forEach((preset, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'preset-btn';
+                btn.title = preset.name;
+                let bg;
+                if (preset.name === 'None') bg = 'linear-gradient(180deg, #ccc, #999)';
+                else if (preset.mode === 3) bg = `linear-gradient(180deg, ${preset.c1}, ${preset.c3}, ${preset.c2})`;
+                else bg = `linear-gradient(180deg, ${preset.c1}, ${preset.c2})`;
+                btn.style.background = bg;
+                const label = document.createElement('span');
+                label.className = 'preset-name';
+                label.textContent = preset.name;
+                btn.appendChild(label);
+                btn.addEventListener('click', () => applyPreset(i));
+                grid.appendChild(btn);
+            });
+        }
+
+        function applyPreset(index) {
+            const p = PRESETS[index];
+            state.color1 = p.c1;
+            state.color2 = p.c2;
+            state.gradientMode = p.mode;
+            state.opacity1 = p.o1;
+            state.opacity2 = p.o2;
+            state.opacity3 = p.o3;
+            state.blendMode = p.blend;
+
+            if (p.mode === 3) {
+                state.color3 = p.c3;
+                document.getElementById('color3').value = p.c3;
+                document.getElementById('color-middle-row').style.display = 'flex';
+            } else {
+                document.getElementById('color-middle-row').style.display = 'none';
+            }
+
+            document.getElementById('color1').value = p.c1;
+            document.getElementById('color2').value = p.c2;
+            document.getElementById('opacity1').value = p.o1;
+            document.getElementById('opacity1-val').textContent = p.o1 + '%';
+            document.getElementById('opacity2').value = p.o2;
+            document.getElementById('opacity2-val').textContent = p.o2 + '%';
+            document.getElementById('opacity3').value = p.o3;
+            document.getElementById('opacity3-val').textContent = p.o3 + '%';
+            document.getElementById('blend-mode').value = p.blend;
+
+            document.querySelectorAll('.mode-btn').forEach(b => {
+                b.classList.toggle('active', parseInt(b.dataset.mode) === p.mode);
+            });
+
+            document.querySelectorAll('.preset-btn').forEach((btn, i) => {
+                btn.classList.toggle('active', i === index);
+            });
+            render();
+        }
+
+        function clearActivePreset() {
+            document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+        }
+
+        // ========== ACTIONS ==========
+        function downloadImage() {
+            if (!state.cardImage) return;
+            const link = document.createElement('a');
+            link.download = 'gradedguard-fitting-room.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        function resetAll() {
+            state = {
+                gradientMode: 2,
+                color1: '#cc6600',
+                color2: '#8B4513',
+                color3: '#ff8800',
+                opacity1: 85, opacity2: 85, opacity3: 85,
+                blendMode: 'color',
+                cardImage: null,
+                cardOffsetX: 0,
+                cardOffsetY: 0,
+                cardScale: 95,
+                frameBase: 'light-to-dark',
+                flipFrame: false
+            };
+
+            document.getElementById('color1').value = state.color1;
+            document.getElementById('color2').value = state.color2;
+            document.getElementById('opacity1').value = 85;
+            document.getElementById('opacity1-val').textContent = '85%';
+            document.getElementById('opacity2').value = 85;
+            document.getElementById('opacity2-val').textContent = '85%';
+            document.getElementById('opacity3').value = 85;
+            document.getElementById('opacity3-val').textContent = '85%';
+            document.getElementById('blend-mode').value = state.blendMode;
+            document.getElementById('card-x').value = 0;
+            document.getElementById('card-x-val').textContent = '0';
+            document.getElementById('card-y').value = 0;
+            document.getElementById('card-y-val').textContent = '0';
+            document.getElementById('card-scale').value = 100;
+            document.getElementById('card-scale-val').textContent = '100%';
+
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === '2'));
+            document.getElementById('color-middle-row').style.display = 'none';
+            document.querySelectorAll('.base-btn').forEach(b => b.classList.toggle('active', b.dataset.base === 'light-to-dark'));
+            document.getElementById('flip-frame').checked = false;
+            clearActivePreset();
+
+            canvas.style.display = 'none';
+            placeholder.style.display = 'block';
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            uploadZone.classList.remove('has-card');
+            uploadZone.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <p>Click or drag to upload your graded card</p>
+            `;
+        }
+
+        // ========== START ==========
+        init();
+    </script>
+</body>
+</html>

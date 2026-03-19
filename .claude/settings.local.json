@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:gemminthearts.com)",
+      "Bash(sips:*)",
+      "Bash(open:*)"
+    ]
+  }
+}
