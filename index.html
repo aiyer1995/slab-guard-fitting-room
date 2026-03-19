@@ -566,20 +566,20 @@
                 <div class="color-row">
                     <label>Top</label>
                     <input type="color" id="color1" value="#888888">
-                    <input type="range" id="opacity1" min="0" max="100" value="0" class="color-opacity">
-                    <span class="opacity-val" id="opacity1-val">0%</span>
+                    <input type="range" id="opacity1" min="0" max="100" value="100" class="color-opacity">
+                    <span class="opacity-val" id="opacity1-val">100%</span>
                 </div>
                 <div class="color-row" id="color-middle-row" style="display:none;">
                     <label>Middle</label>
                     <input type="color" id="color3" value="#888888">
-                    <input type="range" id="opacity3" min="0" max="100" value="0" class="color-opacity">
-                    <span class="opacity-val" id="opacity3-val">0%</span>
+                    <input type="range" id="opacity3" min="0" max="100" value="100" class="color-opacity">
+                    <span class="opacity-val" id="opacity3-val">100%</span>
                 </div>
                 <div class="color-row">
                     <label>Bottom</label>
                     <input type="color" id="color2" value="#888888">
-                    <input type="range" id="opacity2" min="0" max="100" value="0" class="color-opacity">
-                    <span class="opacity-val" id="opacity2-val">0%</span>
+                    <input type="range" id="opacity2" min="0" max="100" value="100" class="color-opacity">
+                    <span class="opacity-val" id="opacity2-val">100%</span>
                 </div>
             </div>
 
@@ -630,9 +630,9 @@
             color1: '#888888',
             color2: '#888888',
             color3: '#888888',
-            opacity1: 0,
-            opacity2: 0,
-            opacity3: 0,
+            opacity1: 100,
+            opacity2: 100,
+            opacity3: 100,
             blendMode: 'color',
             cardImage: null,
             cardOffsetX: 0,
@@ -1147,7 +1147,7 @@
                 color1: '#888888',
                 color2: '#888888',
                 color3: '#888888',
-                opacity1: 0, opacity2: 0, opacity3: 0,
+                opacity1: 100, opacity2: 100, opacity3: 100,
                 blendMode: 'color',
                 cardImage: null,
                 cardOffsetX: 0,
@@ -1160,12 +1160,12 @@
 
             document.getElementById('color1').value = state.color1;
             document.getElementById('color2').value = state.color2;
-            document.getElementById('opacity1').value = 0;
-            document.getElementById('opacity1-val').textContent = '0%';
-            document.getElementById('opacity2').value = 0;
-            document.getElementById('opacity2-val').textContent = '0%';
-            document.getElementById('opacity3').value = 0;
-            document.getElementById('opacity3-val').textContent = '0%';
+            document.getElementById('opacity1').value = 100;
+            document.getElementById('opacity1-val').textContent = '100%';
+            document.getElementById('opacity2').value = 100;
+            document.getElementById('opacity2-val').textContent = '100%';
+            document.getElementById('opacity3').value = 100;
+            document.getElementById('opacity3-val').textContent = '100%';
             document.getElementById('blend-mode').value = state.blendMode;
             document.getElementById('card-x').value = 0;
             document.getElementById('card-x-val').textContent = '0';
