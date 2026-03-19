@@ -4,7 +4,9 @@
       "WebFetch(domain:gemminthearts.com)",
       "Bash(sips:*)",
       "Bash(open:*)",
-      "Bash(gh repo:*)"
+      "Bash(gh repo:*)",
+      "Bash(printf '%02x%02x%02x\\\\n' 52 9 62)",
+      "Bash(printf '%02x%02x%02x\\\\n' 18 18 18)"
     ]
   }
 }
