@@ -643,6 +643,20 @@
             return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
         }
 
+        // ========== PATH HELPERS ==========
+        function roundedRect(c, x, y, w, h, r) {
+            c.moveTo(x + r, y);
+            c.lineTo(x + w - r, y);
+            c.arcTo(x + w, y, x + w, y + r, r);
+            c.lineTo(x + w, y + h - r);
+            c.arcTo(x + w, y + h, x + w - r, y + h, r);
+            c.lineTo(x + r, y + h);
+            c.arcTo(x, y + h, x, y + h - r, r);
+            c.lineTo(x, y + r);
+            c.arcTo(x, y, x + r, y, r);
+            c.closePath();
+        }
+
         // ========== RENDERING ==========
         const SHADOW_PAD = 40;
 
@@ -661,7 +675,13 @@
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(P, P, fw, fh);
 
-            // 2. Draw the user's graded card (aspect-fit inside frame area)
+            // 2. Draw the user's graded card, clipped to the frame area
+            ctx.save();
+            const clipR = Math.round(fw * 0.08);
+            ctx.beginPath();
+            roundedRect(ctx, P, P, fw, fh, clipR);
+            ctx.clip();
+
             const img = state.cardImage;
             const imgAR = img.width / img.height;
             const frameAR = fw / fh;
@@ -679,6 +699,7 @@
             const cx = P + (fw - cw) / 2 + state.cardOffsetX;
             const cy = P + (fh - ch) / 2 + state.cardOffsetY;
             ctx.drawImage(img, cx, cy, cw, ch);
+            ctx.restore();
 
             // 3. Overlay the colorized bumper frame
             const frame = getActiveFrame();

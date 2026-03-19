@@ -3,7 +3,8 @@
     "allow": [
       "WebFetch(domain:gemminthearts.com)",
       "Bash(sips:*)",
-      "Bash(open:*)"
+      "Bash(open:*)",
+      "Bash(gh repo:*)"
     ]
   }
 }
